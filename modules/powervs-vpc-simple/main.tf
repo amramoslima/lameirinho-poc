@@ -10,6 +10,15 @@
 ##################################################################
 
 ##################################################################
+# 0. Resource group "Default" (usado por VPN e restantes recursos VPC)
+##################################################################
+
+data "ibm_resource_group" "default_rg" {
+  provider = ibm.ibm-is
+  name     = var.powervs_resource_group_name
+}
+
+##################################################################
 # 1. VPC Landing Zone (SLZ)
 ##################################################################
 
@@ -49,7 +58,7 @@ resource "ibm_is_ike_policy" "s2s_ike" {
   encryption_algorithms     = [var.site_to_site_vpn.ike_enc_alg]
   dh_groups                 = [var.site_to_site_vpn.ike_dh_group]
   ike_version               = var.site_to_site_vpn.ike_version
-  resource_group            = module.landing_zone.resource_group_data["${var.prefix}-${local.second_rg_name}"]
+  resource_group            = data.ibm_resource_group.default_rg.id
 }
 
 resource "ibm_is_ipsec_policy" "s2s_ipsec" {
@@ -60,7 +69,7 @@ resource "ibm_is_ipsec_policy" "s2s_ipsec" {
   authentication_algorithms = [var.site_to_site_vpn.ipsec_auth_alg]
   encryption_algorithms     = [var.site_to_site_vpn.ipsec_enc_alg]
   pfs_groups                = [var.site_to_site_vpn.ipsec_pfs]
-  resource_group            = module.landing_zone.resource_group_data["${var.prefix}-${local.second_rg_name}"]
+  resource_group            = data.ibm_resource_group.default_rg.id
 }
 
 resource "ibm_is_vpn_gateway" "s2s_vpn" {
@@ -69,7 +78,7 @@ resource "ibm_is_vpn_gateway" "s2s_vpn" {
 
   name           = "${var.prefix}-${var.site_to_site_vpn.peer_name}-vpn-gw"
   subnet         = local.primary_subnet_id
-  resource_group = module.landing_zone.resource_group_data["${var.prefix}-${local.second_rg_name}"]
+  resource_group = data.ibm_resource_group.default_rg.id
   mode           = "policy"
   tags           = var.tags
 }

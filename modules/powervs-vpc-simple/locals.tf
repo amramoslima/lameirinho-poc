@@ -69,12 +69,6 @@ locals {
   vpc_zone                 = "${lookup(local.ibm_powervs_zone_cloud_region_map, var.powervs_zone, null)}-${local.availability_zone_number}"
 
   #----------------------------------------------------------------
-  # Resource group helpers
-  #----------------------------------------------------------------
-  second_rg_name = "slz-edge-rg"
-  tgw_rg_name    = "slz-service-rg"
-
-  #----------------------------------------------------------------
   # Normalise external_access_ip (add /32 if no prefix supplied)
   #----------------------------------------------------------------
   external_access_ip = var.external_access_ip != null && var.external_access_ip != "" ? (
@@ -108,8 +102,6 @@ EOT
       network_services_vsi_profile = var.network_services_vsi_profile
       user_data                    = replace(local.generated_user_data, "\n", "\\n")
       transit_gateway_global       = var.transit_gateway_global
-      second_rg_name               = local.second_rg_name
-      tgw_rg_name                  = local.tgw_rg_name
       availability_zone            = local.availability_zone
       vpc_subnet_cidrs             = var.vpc_subnet_cidrs
       powervs_net_cidr             = var.powervs_network.cidr

@@ -1,14 +1,9 @@
 {
     "resource_groups": [
         {
-            "name": "slz-service-rg",
-            "create": true,
-            "use_prefix": true
-        },
-        {
-            "name": "${second_rg_name}",
-            "create": true,
-            "use_prefix": true
+            "name": "Default",
+            "create": false,
+            "use_prefix": false
         }
     ],
     "key_management": {
@@ -25,18 +20,18 @@
     "atracker": {
         "collector_bucket_name": null,
         "receive_global_events": false,
-        "resource_group": "slz-service-rg",
+        "resource_group": "Default",
         "add_route": false
     },
     "enable_transit_gateway": true,
-    "transit_gateway_resource_group": "${tgw_rg_name}",
+    "transit_gateway_resource_group": "Default",
     "transit_gateway_global": ${transit_gateway_global},
     "transit_gateway_connections": ["pvs-vpc"],
     "security_groups": [
         {
             "name": "network-services-sg",
             "vpc_name": "pvs-vpc",
-            "resource_group": "slz-service-rg",
+            "resource_group": "Default",
             "rules": [
                 {
                     "direction": "inbound",
@@ -120,7 +115,7 @@
         {
             "name": "vpe-sg",
             "vpc_name": "pvs-vpc",
-            "resource_group": "${second_rg_name}",
+            "resource_group": "Default",
             "show": false,
             "rules": [
                 {
@@ -165,7 +160,7 @@
     "vpcs": [
         {
             "prefix": "pvs-vpc",
-            "resource_group": "${second_rg_name}",
+            "resource_group": "Default",
             "clean_default_sg_acl": false,
             "default_security_group_rules": [
                 {
@@ -244,7 +239,7 @@
             "image_name": "${rhel_image}",
             "machine_type": "${network_services_vsi_profile}",
             "vpc_name": "pvs-vpc",
-            "resource_group": "${second_rg_name}",
+            "resource_group": "Default",
             "enable_floating_ip": false,
             "ssh_keys": ["ssh-key"],
             "vsi_per_subnet": 1,
