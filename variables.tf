@@ -43,6 +43,12 @@ variable "ssh_private_key" {
   sensitive   = true
 }
 
+variable "external_access_ip" {
+  description = "Public IP (CIDR notation, e.g. 203.0.113.5/32) allowed to SSH into the network-services VSI. Set to null to skip the security-group rule (use VPN-only access)."
+  type        = string
+  default     = null
+}
+
 #####################################################
 # VPC — Networking
 #####################################################
