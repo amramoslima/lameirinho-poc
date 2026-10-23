@@ -92,13 +92,6 @@ resource "ibm_is_vpn_gateway_connection" "s2s_connection" {
   ipsec_policy = ibm_is_ipsec_policy.s2s_ipsec[0].id
 }
 
-# Data source: look up TGW connections after landing_zone creates them
-data "ibm_tg_connections" "tgw_connections" {
-  provider   = ibm.ibm-is
-  gateway_id = module.landing_zone.transit_gateway_data.id
-  depends_on = [module.landing_zone]
-}
-
 ##################################################################
 # 3. Transit Gateway — VPC address prefixes + static routes
 #
@@ -134,32 +127,6 @@ resource "ibm_is_vpc_address_prefix" "onprem_prefix" {
   zone = local.vpc_zone
   vpc  = [for vpc in module.landing_zone.vpc_data : vpc.vpc_id if vpc.vpc_name == "${var.prefix}-pvs-vpc"][0]
   cidr = each.value
-}
-
-# (b) TGW static route per on-premises CIDR → VPC connection
-#     Ensures the TGW always forwards on-prem traffic toward the VPC
-resource "ibm_tg_route_report" "tgw_route_report" {
-  provider = ibm.ibm-is
-  count    = var.site_to_site_vpn.enable ? 1 : 0
-
-  gateway = module.landing_zone.transit_gateway_data.id
-}
-
-resource "ibm_tg_connection_prefix_filter" "onprem_static_route" {
-  provider = ibm.ibm-is
-
-  # One prefix filter per on-premises CIDR.
-  # Works in both CREATE and REUSE mode — the on_premises_cidrs drive this,
-  # not whether the gateway was created by this module.
-  for_each   = local.onprem_cidr_map
-  depends_on = [ibm_is_vpc_address_prefix.onprem_prefix, ibm_is_vpn_gateway_connection.s2s_connection]
-
-  gateway       = module.landing_zone.transit_gateway_data.id
-  connection_id = local.tgw_vpc_connection_id
-  action        = "permit"
-  prefix        = each.value
-  le            = tonumber(split("/", each.value)[1])
-  ge            = tonumber(split("/", each.value)[1])
 }
 
 ##################################################################

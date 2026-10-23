@@ -182,15 +182,8 @@ EOT
     replace(replace(cidr, ".", "-"), "/", "-") => cidr
   } : {}
 
-  #----------------------------------------------------------------
-  # Transit Gateway VPC connection ID
-  # Looked up via data source after the TGW is created by SLZ.
-  # We pick the connection whose network_type == "vpc".
-  #----------------------------------------------------------------
-  tgw_vpc_connection_id = try(
-    [for c in data.ibm_tg_connections.tgw_connections.connections :
-      c.id if c.network_type == "vpc"
-    ][0],
-    null
-  )
+  # tgw_vpc_connection_id: not available via SLZ outputs in v8.x.
+  # VPC address prefixes (ibm_is_vpc_address_prefix) are sufficient for
+  # PowerVS → on-premises routing via TGW in this PoC.
+  tgw_vpc_connection_id = null
 }

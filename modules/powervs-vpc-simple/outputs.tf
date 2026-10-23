@@ -128,12 +128,11 @@ output "transit_gateway_connections" {
 }
 
 output "tgw_onprem_prefix_filters" {
-  description = "TGW prefix filters (permit) created for on-premises CIDRs. Empty map if VPN is disabled."
+  description = "On-premises CIDRs advertised as VPC address prefixes for TGW routing."
   value = {
-    for k, v in ibm_tg_connection_prefix_filter.onprem_static_route : k => {
-      prefix    = v.prefix
-      action    = v.action
-      filter_id = v.filter_id
+    for k, v in ibm_is_vpc_address_prefix.onprem_prefix : k => {
+      cidr = v.cidr
+      name = v.name
     }
   }
 }
