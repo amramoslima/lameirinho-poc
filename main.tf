@@ -30,6 +30,7 @@ module "lameirinho" {
   # Network services VSI (Squid proxy, DNS forwarder, NTP forwarder)
   vpc_intel_image              = var.vpc_intel_image
   network_services_vsi_profile = var.network_services_vsi_profile
+  configure_network_services   = var.configure_network_services
   configure_dns_forwarder      = var.configure_dns_forwarder
   configure_ntp_forwarder      = var.configure_ntp_forwarder
   dns_forwarder_config         = var.dns_forwarder_config

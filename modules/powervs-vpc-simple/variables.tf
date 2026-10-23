@@ -121,6 +121,12 @@ variable "ibmi_instance" {
   default = {}
 }
 
+variable "configure_network_services" {
+  description = "Run Ansible to configure Squid/DNS/NTP on the network-services VSI. Set false for initial deploy when VPN/Floating IP is not yet active."
+  type        = bool
+  default     = true
+}
+
 variable "existing_monitoring_instance_crn" {
   type    = string
   default = null

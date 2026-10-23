@@ -160,9 +160,12 @@ module "powervs_workspace" {
 ##################################################################
 # 5. IBM i 7.5 Power Virtual Server instance
 #
-# Stock image name pattern: IBMi-7.5-*-EN (English, Power11 S1022)
-# The image must be available in the target zone; if var.ibmi_instance.image_id
-# is empty we perform a data lookup by OS type.
+# IBM i 7.5 image lookup — naming varies by zone:
+#   Frankfurt (eu-de-*) : IBMi-7.5-*-EN
+#   Madrid    (mad0*)   : IBMi-75-07-2984-* (Power10/11 pool) or IBMi-75-07-2924-* (Power9)
+# Strategy: prefer explicit image_id override; otherwise match os_type="ibmi"
+# and filter by "75" (version 7.5) and "2984" (Power10/11 storage pool).
+# Final fallback to first ibmi image in catalog.
 ##################################################################
 
 data "ibm_pi_catalog_images" "ibmi_catalog" {
@@ -172,24 +175,31 @@ data "ibm_pi_catalog_images" "ibmi_catalog" {
 }
 
 locals {
-  # Resolve the IBM i 7.5 EN image name from catalog (read during apply).
-  # prefer explicit override; otherwise pick first match on IBMi-7.5 + EN.
-  ibmi_image_name = var.ibmi_instance.image_id != "" ? var.ibmi_instance.image_id : (
-    length([
-      for img in data.ibm_pi_catalog_images.ibmi_catalog.images :
-      img.name if(
-        can(regex("IBMi-7.5", img.name)) &&
-        can(regex("-EN", img.name))
-      )
-    ]) > 0
-    ? [
-      for img in data.ibm_pi_catalog_images.ibmi_catalog.images :
-      img.name if(
-        can(regex("IBMi-7.5", img.name)) &&
-        can(regex("-EN", img.name))
-      )
-    ][0]
-    : "IBMi-7.5-2924-EN"
+  # All IBM i images in the catalog
+  _all_ibmi_images = [
+    for img in data.ibm_pi_catalog_images.ibmi_catalog.images :
+    img.name if try(img.operating_system, "") == "ibmi"
+  ]
+
+  # IBM i 7.5 images on Power10/11 pool (2984) — preferred for S1022
+  _ibmi_75_2984 = [
+    for n in local._all_ibmi_images : n
+    if can(regex("75", n)) && can(regex("2984", n))
+  ]
+
+  # IBM i 7.5 images on any pool — wider fallback
+  _ibmi_75_any = [
+    for n in local._all_ibmi_images : n
+    if can(regex("75", n))
+  ]
+
+  # Resolution order: explicit override → 7.5/2984 → 7.5/any → first ibmi
+  ibmi_image_name = (
+    var.ibmi_instance.image_id != "" ? var.ibmi_instance.image_id :
+    length(local._ibmi_75_2984) > 0 ? local._ibmi_75_2984[0] :
+    length(local._ibmi_75_any)  > 0 ? local._ibmi_75_any[0]  :
+    length(local._all_ibmi_images) > 0 ? local._all_ibmi_images[0] :
+    "IBMi-75-07-2984-1"
   )
 }
 
@@ -271,7 +281,7 @@ module "configure_network_services" {
   bastion_host_ip        = local.access_host_or_ip
   ansible_host_or_ip     = local.network_services_vsi_ip
   ssh_private_key        = var.ssh_private_key
-  configure_ansible_host = true
+  configure_ansible_host = var.configure_network_services
 
   src_script_template_name = "configure-network-services/ansible_exec.sh.tftpl"
   dst_script_file_name     = "network-services-instance.sh"

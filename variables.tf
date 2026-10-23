@@ -263,6 +263,12 @@ variable "dns_forwarder_config" {
   }
 }
 
+variable "configure_network_services" {
+  description = "Run Ansible to configure Squid/DNS/NTP on the network-services VSI. Set false for initial deploy when VPN/Floating IP is not yet active."
+  type        = bool
+  default     = true
+}
+
 #####################################################
 # Monitoring (Lite / free tier — no new instance)
 #####################################################
