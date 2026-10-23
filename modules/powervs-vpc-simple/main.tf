@@ -44,23 +44,23 @@ resource "ibm_is_ike_policy" "s2s_ike" {
   provider = ibm.ibm-is
   count    = local.create_vpn_gw ? 1 : 0
 
-  name                     = "${var.prefix}-${var.site_to_site_vpn.peer_name}-ike-policy"
-  authentication_algorithm = var.site_to_site_vpn.ike_auth_alg
-  encryption_algorithm     = var.site_to_site_vpn.ike_enc_alg
-  dh_group                 = var.site_to_site_vpn.ike_dh_group
-  ike_version              = var.site_to_site_vpn.ike_version
-  resource_group           = module.landing_zone.resource_group_data["${var.prefix}-${local.second_rg_name}"]
+  name                      = "${var.prefix}-${var.site_to_site_vpn.peer_name}-ike-policy"
+  authentication_algorithms = [var.site_to_site_vpn.ike_auth_alg]
+  encryption_algorithms     = [var.site_to_site_vpn.ike_enc_alg]
+  dh_groups                 = [var.site_to_site_vpn.ike_dh_group]
+  ike_version               = var.site_to_site_vpn.ike_version
+  resource_group            = module.landing_zone.resource_group_data["${var.prefix}-${local.second_rg_name}"]
 }
 
 resource "ibm_is_ipsec_policy" "s2s_ipsec" {
   provider = ibm.ibm-is
   count    = local.create_vpn_gw ? 1 : 0
 
-  name                     = "${var.prefix}-${var.site_to_site_vpn.peer_name}-ipsec-policy"
-  authentication_algorithm = var.site_to_site_vpn.ipsec_auth_alg
-  encryption_algorithm     = var.site_to_site_vpn.ipsec_enc_alg
-  pfs                      = var.site_to_site_vpn.ipsec_pfs
-  resource_group           = module.landing_zone.resource_group_data["${var.prefix}-${local.second_rg_name}"]
+  name                      = "${var.prefix}-${var.site_to_site_vpn.peer_name}-ipsec-policy"
+  authentication_algorithms = [var.site_to_site_vpn.ipsec_auth_alg]
+  encryption_algorithms     = [var.site_to_site_vpn.ipsec_enc_alg]
+  pfs_groups                = [var.site_to_site_vpn.ipsec_pfs]
+  resource_group            = module.landing_zone.resource_group_data["${var.prefix}-${local.second_rg_name}"]
 }
 
 resource "ibm_is_vpn_gateway" "s2s_vpn" {
@@ -80,13 +80,18 @@ resource "ibm_is_vpn_gateway_connection" "s2s_connection" {
 
   name          = "${var.prefix}-${var.site_to_site_vpn.peer_name}-vpn-conn"
   vpn_gateway   = ibm_is_vpn_gateway.s2s_vpn[0].id
-  peer_address  = var.site_to_site_vpn.peer_address
   preshared_key = var.site_to_site_vpn.preshared_key
 
-  # local_cidrs: auto-computed (VPC subnets + PowerVS subnet + extras)
-  local_cidrs = local.vpn_local_cidrs
-  # peer_cidrs: on-premises networks declared by the operator
-  peer_cidrs  = var.site_to_site_vpn.on_premises_cidrs
+  # peer block: on-premises gateway address + CIDRs advertised by the peer
+  peer {
+    address = var.site_to_site_vpn.peer_address
+    cidrs   = var.site_to_site_vpn.on_premises_cidrs
+  }
+
+  # local block: IBM Cloud-side CIDRs (VPC subnets + PowerVS subnet + extras)
+  local {
+    cidrs = local.vpn_local_cidrs
+  }
 
   ike_policy   = ibm_is_ike_policy.s2s_ike[0].id
   ipsec_policy = ibm_is_ipsec_policy.s2s_ipsec[0].id
