@@ -67,7 +67,7 @@ variable "vpc_subnet_cidrs" {
     optional2 = optional(string, null)
   })
   default = {
-    primary   = "10.30.10.0/24"
+    primary   = "172.16.1.0/24"
     optional1 = null
     optional2 = null
   }
@@ -178,7 +178,7 @@ variable "powervs_network" {
   })
   default = {
     name = "pvs-net"
-    cidr = "10.51.0.0/24"
+    cidr = "172.16.2.0/24"
   }
 
   validation {

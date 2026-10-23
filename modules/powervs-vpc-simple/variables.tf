@@ -103,7 +103,7 @@ variable "powervs_network" {
   })
   default = {
     name = "pvs-net"
-    cidr = "10.51.0.0/24"
+    cidr = "172.16.2.0/24"
   }
 }
 
