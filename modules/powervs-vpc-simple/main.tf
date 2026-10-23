@@ -92,6 +92,13 @@ resource "ibm_is_vpn_gateway_connection" "s2s_connection" {
   ipsec_policy = ibm_is_ipsec_policy.s2s_ipsec[0].id
 }
 
+# Data source: look up TGW connections after landing_zone creates them
+data "ibm_tg_connections" "tgw_connections" {
+  provider   = ibm.ibm-is
+  gateway_id = module.landing_zone.transit_gateway_data.id
+  depends_on = [module.landing_zone]
+}
+
 ##################################################################
 # 3. Transit Gateway — VPC address prefixes + static routes
 #

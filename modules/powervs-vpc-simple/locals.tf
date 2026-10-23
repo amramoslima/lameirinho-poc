@@ -184,12 +184,12 @@ EOT
 
   #----------------------------------------------------------------
   # Transit Gateway VPC connection ID
-  # The SLZ module exposes transit_gateway_data with connection IDs.
-  # We pick the connection whose name ends with "-pvs-vpc".
+  # Looked up via data source after the TGW is created by SLZ.
+  # We pick the connection whose network_type == "vpc".
   #----------------------------------------------------------------
   tgw_vpc_connection_id = try(
-    [for c in module.landing_zone.transit_gateway_data.connections :
-      c.connection_id if endswith(c.name, "-pvs-vpc")
+    [for c in data.ibm_tg_connections.tgw_connections.connections :
+      c.id if c.network_type == "vpc"
     ][0],
     null
   )

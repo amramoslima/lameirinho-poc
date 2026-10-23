@@ -123,8 +123,8 @@ output "transit_gateway_name" {
 }
 
 output "transit_gateway_connections" {
-  description = "List of Transit Gateway connections (VPC + PowerVS)."
-  value       = module.landing_zone.transit_gateway_data.connections
+  description = "List of Transit Gateway connections (VPC + PowerVS). Informational only — connection IDs are managed by the Landing Zone module."
+  value       = try(module.landing_zone.transit_gateway_data.connections, null)
 }
 
 output "tgw_onprem_prefix_filters" {
