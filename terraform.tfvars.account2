@@ -1,0 +1,83 @@
+##################################################################
+# Lameirinho PoC — terraform.tfvars  (IBM Cloud Account 2)
+# ATENÇÃO: ficheiro sensível — não commitar para git
+#
+# Como usar:
+#   cp terraform.tfvars.account2 terraform.tfvars
+#   # preencher os campos marcados com <<FILL_ME>>
+#   ~/bin/terraform_arm64 init   # re-init se a conta for diferente
+#   ~/bin/terraform_arm64 plan -out=tfplan
+#   ~/bin/terraform_arm64 apply tfplan
+##################################################################
+
+# ── Identidade IBM Cloud ─────────────────────────────────────────
+ibmcloud_api_key            = "<<FILL_ME: API key da conta 2>>"
+prefix                      = "lam-poc2"
+powervs_resource_group_name = "<<FILL_ME: nome do resource group na conta 2>>"
+
+# ── Zona PowerVS ─────────────────────────────────────────────────
+# mad02 = Madrid (zone-1, eu-es) — S1022 Power10/11 disponível
+# Alternativa: mad04 (zone-2) se mad02 não tiver capacidade
+powervs_zone = "mad02"
+
+# ── SSH ──────────────────────────────────────────────────────────
+# Gerar novo par de chaves para a conta 2:
+#   ssh-keygen -t rsa -b 4096 -f ~/.ssh/lameirinho-poc2 -C "lameirinho-poc2"
+ssh_public_key = "<<FILL_ME: conteúdo de ~/.ssh/lameirinho-poc2.pub>>"
+
+ssh_private_key = <<-EOT
+<<FILL_ME: conteúdo de ~/.ssh/lameirinho-poc2 (chave privada)>>
+EOT
+
+# ── VPC networking ───────────────────────────────────────────────
+vpc_subnet_cidrs = {
+  primary   = "172.16.1.0/24"
+  optional1 = null
+  optional2 = null
+}
+
+transit_gateway_global = false
+
+# ── VPN Site-to-Site ─────────────────────────────────────────────
+site_to_site_vpn = {
+  enable            = true
+  peer_name         = "lameirinho-pt"
+  peer_address      = "148.69.217.91"
+  preshared_key     = "<<FILL_ME: PSK real acordada com o firewall PT>>"
+  on_premises_cidrs = ["192.168.0.0/16"]
+
+  ike_version    = 2
+  ike_auth_alg   = "sha256"
+  ike_enc_alg    = "aes256"
+  ike_dh_group   = 14
+  ipsec_auth_alg = "sha256"
+  ipsec_enc_alg  = "aes256"
+  ipsec_pfs      = "group_14"
+}
+
+# ── PowerVS subnet ───────────────────────────────────────────────
+powervs_network = {
+  name = "pvs-net"
+  cidr = "172.16.2.0/24"
+}
+
+# ── IBM i 7.5 — spec do PoC ─────────────────────────────────────
+ibmi_instance = {
+  name         = "ibmi-prod"
+  proc_type    = "shared"
+  processors   = "0.25"
+  memory       = 16
+  sys_type     = "s1022"
+  storage_tier = "tier3"
+  boot_size    = 100
+}
+
+# ── Network Services VSI ─────────────────────────────────────────
+vpc_intel_image              = "ibm-redhat-9-4-minimal-amd64-2"
+network_services_vsi_profile = "cxf-2x4"
+# Desactivado no deploy inicial — sem acesso SSH (sem VPN activa nem Floating IP)
+# Activar depois de VPN up ou Floating IP configurado
+configure_network_services   = false
+
+# ── Tags ─────────────────────────────────────────────────────────
+tags = ["lameirinho", "poc", "power-ibmi", "account2"]
