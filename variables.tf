@@ -196,12 +196,13 @@ variable "ibmi_instance" {
     Configuration of the IBM i 7.5 Power Virtual Server instance.
     Defaults match the PoC specification:
       - proc_type  : shared (fractional core)
-      - processors : 0.25  (quarter core on Power11)
-      - memory     : 16 GB
+      - processors : 0.25  (quarter core on Power10/11)
+      - memory     : 16 GB (IBM i 7.5 minimum is 4 GB; 16 GB recommended for production)
       - storage_tier: tier3
       - boot_size  : 100 GB
-      - sys_type   : s1022 (Power11)
-      - image_id   : stock IBM i 7.5 EN image — override with your region's image ID if needed
+      - sys_type   : s1022 (Power10/11 — note: "s1122" is not a valid IBM PowerVS model)
+      - image_id   : stock IBM i 7.5 image — auto-resolved from catalog per zone
+                     (Frankfurt: IBMi-7.5-*-EN  |  Madrid: IBMi-75-07-2984-*)
   EOT
   type = object({
     name         = optional(string, "ibmi-instance")
