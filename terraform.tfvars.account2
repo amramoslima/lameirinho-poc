@@ -12,7 +12,7 @@
 
 # ── Identidade IBM Cloud ─────────────────────────────────────────
 ibmcloud_api_key            = "<<FILL_ME: API key da conta 2>>"
-prefix                      = "lam-poc2"
+prefix                      = "lam"
 powervs_resource_group_name = "<<FILL_ME: nome do resource group na conta 2>>"
 
 # ── Zona PowerVS ─────────────────────────────────────────────────
@@ -67,7 +67,7 @@ ibmi_instance = {
   proc_type    = "shared"
   processors   = "0.25"
   memory       = 16
-  sys_type     = "s1022"
+  sys_type     = "Power11"
   storage_tier = "tier3"
   boot_size    = 100
 }
