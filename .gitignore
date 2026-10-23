@@ -1,0 +1,15 @@
+# Ficheiros sensíveis — nunca commitar
+terraform.tfvars
+*.tfvars
+*.tfvars.json
+
+# Estado Terraform
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+tfplan
+
+# Chaves SSH geradas localmente
+*.pem
+*.key

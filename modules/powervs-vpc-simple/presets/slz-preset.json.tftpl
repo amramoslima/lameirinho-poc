@@ -1,0 +1,255 @@
+{
+    "resource_groups": [
+        {
+            "name": "slz-service-rg",
+            "create": true,
+            "use_prefix": true
+        },
+        {
+            "name": "${second_rg_name}",
+            "create": true,
+            "use_prefix": true
+        }
+    ],
+    "key_management": null,
+    "wait_till": "IngressReady",
+    "service_endpoints": "private",
+    "vpn_gateways": [],
+    "cos": [],
+    "atracker": {
+        "collector_bucket_name": null,
+        "receive_global_events": false,
+        "resource_group": "slz-service-rg",
+        "add_route": false
+    },
+    "enable_transit_gateway": true,
+    "transit_gateway_resource_group": "${tgw_rg_name}",
+    "transit_gateway_global": ${transit_gateway_global},
+    "transit_gateway_connections": ["pvs-vpc"],
+    "security_groups": [
+        {
+            "name": "network-services-sg",
+            "vpc_name": "pvs-vpc",
+            "resource_group": "slz-service-rg",
+            "rules": [
+                {
+                    "direction": "inbound",
+                    "name": "allow-ibm-inbound",
+                    "source": "161.26.0.0/16"
+                },
+                {
+                    "name": "allow-primary-inbound",
+                    "direction": "inbound",
+                    "source": "${vpc_subnet_cidrs.primary}"
+                },
+                %{ if "${vpc_subnet_cidrs.optional1}" != null && "${vpc_subnet_cidrs.optional1}" != "" }
+                {
+                    "name": "allow-optional1-inbound",
+                    "direction": "inbound",
+                    "source": "${vpc_subnet_cidrs.optional1}"
+                },
+                %{ endif }
+                %{ if "${vpc_subnet_cidrs.optional2}" != null && "${vpc_subnet_cidrs.optional2}" != "" }
+                {
+                    "name": "allow-optional2-inbound",
+                    "direction": "inbound",
+                    "source": "${vpc_subnet_cidrs.optional2}"
+                },
+                %{ endif }
+                %{ if "${powervs_net_cidr}" != null }
+                {
+                    "name": "allow-pvs-inbound",
+                    "direction": "inbound",
+                    "source": "${powervs_net_cidr}"
+                },
+                %{ endif }
+                %{ if "${external_access_ip}" != "" && "${external_access_ip}" != null }
+                {
+                    "direction": "inbound",
+                    "name": "allow-external-ssh-inbound",
+                    "source": "${external_access_ip}",
+                    "tcp": {
+                        "port_max": 22,
+                        "port_min": 22
+                    }
+                },
+                %{ endif }
+                {
+                    "direction": "inbound",
+                    "name": "allow-ssh-inbound-schematics1",
+                    "source": "169.45.235.176/28",
+                    "tcp": { "port_max": 22, "port_min": 22 }
+                },
+                {
+                    "direction": "inbound",
+                    "name": "allow-ssh-inbound-schematics2",
+                    "source": "169.55.82.128/27",
+                    "tcp": { "port_max": 22, "port_min": 22 }
+                },
+                {
+                    "direction": "inbound",
+                    "name": "allow-ssh-inbound-schematics3",
+                    "source": "169.60.115.32/27",
+                    "tcp": { "port_max": 22, "port_min": 22 }
+                },
+                {
+                    "direction": "inbound",
+                    "name": "allow-ssh-inbound-schematics4",
+                    "source": "169.63.150.144/28",
+                    "tcp": { "port_max": 22, "port_min": 22 }
+                },
+                {
+                    "direction": "inbound",
+                    "name": "allow-ssh-inbound-schematics5",
+                    "source": "169.62.1.224/28",
+                    "tcp": { "port_max": 22, "port_min": 22 }
+                },
+                {
+                    "direction": "outbound",
+                    "name": "allow-all-outbound",
+                    "source": "0.0.0.0/0"
+                }
+            ]
+        },
+        {
+            "name": "vpe-sg",
+            "vpc_name": "pvs-vpc",
+            "resource_group": "${second_rg_name}",
+            "show": false,
+            "rules": [
+                {
+                    "direction": "inbound",
+                    "name": "allow-ibm-inbound",
+                    "source": "161.26.0.0/16"
+                },
+                {
+                    "name": "allow-primary-inbound",
+                    "direction": "inbound",
+                    "source": "${vpc_subnet_cidrs.primary}"
+                },
+                %{ if "${vpc_subnet_cidrs.optional1}" != null && "${vpc_subnet_cidrs.optional1}" != "" }
+                {
+                    "name": "allow-optional1-inbound",
+                    "direction": "inbound",
+                    "source": "${vpc_subnet_cidrs.optional1}"
+                },
+                %{ endif }
+                %{ if "${vpc_subnet_cidrs.optional2}" != null && "${vpc_subnet_cidrs.optional2}" != "" }
+                {
+                    "name": "allow-optional2-inbound",
+                    "direction": "inbound",
+                    "source": "${vpc_subnet_cidrs.optional2}"
+                },
+                %{ endif }
+                %{ if "${powervs_net_cidr}" != null }
+                {
+                    "name": "allow-pvs-inbound",
+                    "direction": "inbound",
+                    "source": "${powervs_net_cidr}"
+                },
+                %{ endif }
+                {
+                    "direction": "outbound",
+                    "name": "allow-all-outbound",
+                    "source": "0.0.0.0/0"
+                }
+            ]
+        }
+    ],
+    "vpcs": [
+        {
+            "prefix": "pvs-vpc",
+            "resource_group": "${second_rg_name}",
+            "clean_default_sg_acl": false,
+            "default_security_group_rules": [
+                {
+                    "name": "all-inbound",
+                    "direction": "inbound",
+                    "remote": "0.0.0.0/0"
+                }
+            ],
+            "address_prefixes": {
+                "${availability_zone}": [
+                    "${vpc_subnet_cidrs.primary}"
+                    %{ if "${vpc_subnet_cidrs.optional1}" != null && "${vpc_subnet_cidrs.optional1}" != "" },"${vpc_subnet_cidrs.optional1}"%{ endif }
+                    %{ if "${vpc_subnet_cidrs.optional2}" != null && "${vpc_subnet_cidrs.optional2}" != "" },"${vpc_subnet_cidrs.optional2}"%{ endif }
+                ]
+            },
+            "network_acls": [
+                {
+                    "name": "acl",
+                    "rules": [
+                        {
+                            "name": "allow-all-inbound",
+                            "action": "allow",
+                            "direction": "inbound",
+                            "source": "0.0.0.0/0",
+                            "destination": "0.0.0.0/0"
+                        },
+                        {
+                            "name": "allow-all-outbound",
+                            "action": "allow",
+                            "direction": "outbound",
+                            "source": "0.0.0.0/0",
+                            "destination": "0.0.0.0/0"
+                        }
+                    ]
+                }
+            ],
+            "subnets": {
+                "${availability_zone}": [
+                    {
+                        "name": "primary-${availability_zone}",
+                        "cidr": "${vpc_subnet_cidrs.primary}",
+                        "public_gateway": true,
+                        "acl_name": "acl"
+                    }
+                    %{ if "${vpc_subnet_cidrs.optional1}" != null && "${vpc_subnet_cidrs.optional1}" != "" }
+                    ,{
+                        "name": "optional1-${availability_zone}",
+                        "cidr": "${vpc_subnet_cidrs.optional1}",
+                        "public_gateway": false,
+                        "acl_name": "acl"
+                    }
+                    %{ endif }
+                    %{ if "${vpc_subnet_cidrs.optional2}" != null && "${vpc_subnet_cidrs.optional2}" != "" }
+                    ,{
+                        "name": "optional2-${availability_zone}",
+                        "cidr": "${vpc_subnet_cidrs.optional2}",
+                        "public_gateway": false,
+                        "acl_name": "acl"
+                    }
+                    %{ endif }
+                ]
+                %{ for zone in ["zone-1", "zone-2", "zone-3"] ~}
+                    %{~ if availability_zone != zone },"${zone}": null%{ endif }
+                %{ endfor ~}
+            },
+            "use_public_gateways": {
+                "zone-1": ${ availability_zone == "zone-1" },
+                "zone-2": ${ availability_zone == "zone-2" },
+                "zone-3": ${ availability_zone == "zone-3" }
+            }
+        }
+    ],
+    "vsi": [
+        {
+            "name": "network-services",
+            "image_name": "${rhel_image}",
+            "machine_type": "${network_services_vsi_profile}",
+            "vpc_name": "pvs-vpc",
+            "resource_group": "${second_rg_name}",
+            "enable_floating_ip": false,
+            "ssh_keys": ["ssh-key"],
+            "vsi_per_subnet": 1,
+            "subnet_names": ["primary-${availability_zone}"],
+            "block_storage_volumes": [],
+            "security_groups": ["network-services-sg"]
+            %{ if "${user_data}" != "" && "${user_data}" != null }
+            ,
+            "user_data" : "${user_data}"
+            %{ endif }
+        }
+    ],
+    "virtual_private_endpoints": []
+}
