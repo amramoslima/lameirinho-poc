@@ -110,8 +110,9 @@ variable "powervs_network" {
 variable "ibmi_instance" {
   description = <<-EOT
     IBM i 7.5 Power Virtual Server instance configuration.
-    sys_type: s1022 (Power10/11). Note: "s1122" is not a valid IBM PowerVS model.
-    memory  : 8 GB minimum for PoC; 16 GB recommended for production interactive workloads.
+    sys_type: s1022 (Power10/11) or "Power11" (explicit Power11 — available in mad02 only).
+             Note: "s1122" is not a valid IBM PowerVS model.
+    memory  : 16 GB recommended for production interactive workloads (minimum 4 GB).
   EOT
   type = object({
     name         = optional(string, "ibmi-instance")

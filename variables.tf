@@ -200,7 +200,8 @@ variable "ibmi_instance" {
       - memory     : 16 GB (IBM i 7.5 minimum is 4 GB; 16 GB recommended for production)
       - storage_tier: tier3
       - boot_size  : 100 GB
-      - sys_type   : s1022 (Power10/11 — note: "s1122" is not a valid IBM PowerVS model)
+      - sys_type   : s1022 (Power10/11) or "Power11" (explicit Power11, mad02 only)
+                     note: "s1122" is not a valid IBM PowerVS model
       - image_id   : stock IBM i 7.5 image — auto-resolved from catalog per zone
                      (Frankfurt: IBMi-7.5-*-EN  |  Madrid: IBMi-75-07-2984-*)
   EOT
