@@ -13,3 +13,4 @@ tfplan
 # Chaves SSH geradas localmente
 *.pem
 *.key
+lameirinho-poc.pub
