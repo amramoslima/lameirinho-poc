@@ -167,31 +167,31 @@ data "ibm_pi_catalog_images" "ibmi_catalog" {
 }
 
 locals {
-  # Resolve the IBM i 7.5 EN image: prefer explicit override, otherwise
-  # pick the first catalog image whose name contains "IBMi-7.5" and "EN".
-  ibmi_image_id = var.ibmi_instance.image_id != "" ? var.ibmi_instance.image_id : (
+  # Resolve the IBM i 7.5 EN image name: prefer explicit override (image_id used as name),
+  # otherwise pick the first catalog image whose name contains "IBMi-7.5" and "EN".
+  ibmi_image_name = var.ibmi_instance.image_id != "" ? var.ibmi_instance.image_id : (
     length([
       for img in data.ibm_pi_catalog_images.ibmi_catalog.images :
-      img.image_id if(
+      img.name if(
         can(regex("IBMi-7.5", img.name)) &&
         can(regex("-EN", img.name))
       )
     ]) > 0
     ? [
       for img in data.ibm_pi_catalog_images.ibmi_catalog.images :
-      img.image_id if(
+      img.name if(
         can(regex("IBMi-7.5", img.name)) &&
         can(regex("-EN", img.name))
       )
     ][0]
-    : ""
+    : "IBMi-7.5-2924-EN"
   )
 }
 
 resource "ibm_pi_image" "ibmi_image" {
   provider             = ibm.ibm-pi
   pi_cloud_instance_id = module.powervs_workspace.pi_workspace_guid
-  pi_image_id          = local.ibmi_image_id
+  pi_image_name        = local.ibmi_image_name
 }
 
 resource "ibm_pi_instance" "ibmi" {

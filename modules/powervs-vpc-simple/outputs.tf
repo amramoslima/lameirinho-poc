@@ -80,7 +80,7 @@ output "s2s_vpn_gateway_id" {
 
 output "s2s_vpn_gateway_public_ip" {
   description = "Public IP addresses of the VPN Gateway (only available in create mode; empty in reuse mode)."
-  value       = local.create_vpn_gw ? [for m in ibm_is_vpn_gateway.s2s_vpn[0].members : m.public_ip_address] : []
+  value       = local.create_vpn_gw ? [for m in ibm_is_vpn_gateway.s2s_vpn[0].members : m.public_ip] : []
 }
 
 output "s2s_vpn_peer_name" {
