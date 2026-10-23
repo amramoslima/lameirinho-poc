@@ -167,8 +167,8 @@ data "ibm_pi_catalog_images" "ibmi_catalog" {
 }
 
 locals {
-  # Resolve the IBM i 7.5 EN image name: prefer explicit override (image_id used as name),
-  # otherwise pick the first catalog image whose name contains "IBMi-7.5" and "EN".
+  # Resolve the IBM i 7.5 EN image name from catalog (read during apply).
+  # prefer explicit override; otherwise pick first match on IBMi-7.5 + EN.
   ibmi_image_name = var.ibmi_instance.image_id != "" ? var.ibmi_instance.image_id : (
     length([
       for img in data.ibm_pi_catalog_images.ibmi_catalog.images :
@@ -188,10 +188,14 @@ locals {
   )
 }
 
+# Import IBM i stock image into the workspace so pi_instance can reference it
 resource "ibm_pi_image" "ibmi_image" {
   provider             = ibm.ibm-pi
   pi_cloud_instance_id = module.powervs_workspace.pi_workspace_guid
-  pi_image_name        = local.ibmi_image_name
+  pi_image_id = [
+    for img in data.ibm_pi_catalog_images.ibmi_catalog.images :
+    img.image_id if img.name == local.ibmi_image_name
+  ][0]
 }
 
 resource "ibm_pi_instance" "ibmi" {
