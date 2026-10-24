@@ -234,7 +234,7 @@ variable "ibmi_instance" {
 variable "vpc_intel_image" {
   description = "Stock RHEL OS image name for the network-services VSI (SQUID proxy, NTP, DNS)."
   type        = string
-  default     = "ibm-redhat-9-6-amd64-sap-applications-9"
+  default     = "ibm-redhat-9-6-minimal-amd64-13"
 }
 
 variable "network_services_vsi_profile" {

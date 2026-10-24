@@ -73,7 +73,7 @@ ibmi_instance = {
 }
 
 # ── Network Services VSI ─────────────────────────────────────────
-vpc_intel_image              = "ibm-redhat-9-4-minimal-amd64-2"
+vpc_intel_image              = "ibm-redhat-9-6-minimal-amd64-13"
 network_services_vsi_profile = "cxf-2x4"
 # Desactivado no deploy inicial — sem acesso SSH (sem VPN activa nem Floating IP)
 # Activar depois de VPN up ou Floating IP configurado
